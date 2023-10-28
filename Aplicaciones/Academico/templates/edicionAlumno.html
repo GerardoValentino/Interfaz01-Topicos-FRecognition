@@ -1,0 +1,42 @@
+{% extends "./base.html" %}
+{% block title %} Gestion de alumnos {% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <h2>Edicion de Alumno</h2>
+        <div class="card">
+            <div class="card-body">
+                <form action="/editarAlumno/" method="POST"> {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" 
+                                name="txtNUA" 
+                                id="txtNUA" 
+                                value="{{alumno.nua}}"
+                                class="form-control" 
+                                placeholder="NUA" 
+                                minlength="6" 
+                                maxlength="6" 
+                                readonly
+                                required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" 
+                                name="txtNombre" 
+                                id="txtNombre" 
+                                value="{{alumno.nombre}}"
+                                class="form-control" 
+                                placeholder="Nombre del alumno"
+                                minlength="3" 
+                                maxlength="100" 
+                                required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

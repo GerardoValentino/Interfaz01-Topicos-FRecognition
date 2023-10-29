@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect
 from .models import Curso
-from django.contrib import messages
+# from django.contrib import messages
 
 # Create your views here.
 
 def home(request):
     alumnosListados = Curso.objects.all()
-    messages.success(request, '¡Alumnos Listados!')
+    #messages.success(request, '¡Alumnos Listados!')
     return render(request, "gestionAlumnos.html", {"alumnos": alumnosListados})
 
 def registrarAlumno(request):

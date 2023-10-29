@@ -4,11 +4,13 @@
 {% block body %}
 <div class="row">
     <div class="col-md-4 offset-md-4">
-        <h2>Edicion de Alumno</h2>
+        <h2 class="text-center">Editar Alumno</h2>
         <div class="card">
-            <div class="card-body">
+            <div class="card-body" style="display: flex;
+                                    justify-content: flex-start;
+                                    flex-direction: column-reverse;">
                 <form action="/editarAlumno/" method="POST"> {% csrf_token %}
-                    <div class="form-group">
+                    <div class="form-group" style="margin: 10px;">
                         <input type="text" 
                                 name="txtNUA" 
                                 id="txtNUA" 
@@ -17,10 +19,9 @@
                                 placeholder="NUA" 
                                 minlength="6" 
                                 maxlength="6" 
-                                readonly
                                 required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="margin: 10px;">
                         <input type="text" 
                                 name="txtNombre" 
                                 id="txtNombre" 
@@ -31,7 +32,7 @@
                                 maxlength="100" 
                                 required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="display: flex; padding-left: 10px;">
                         <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
                     </div>
                 </form>

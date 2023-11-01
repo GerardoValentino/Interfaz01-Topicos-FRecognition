@@ -1,0 +1,103 @@
+{% extends "./base.html" %}
+{% block title %} Captura {% endblock %}
+
+{% block body %}
+
+<div style="text-align: center; margin-bottom: 10px;">
+    <button id="takeSnapshot" style="padding: 10px;">Take Photo</button>
+</div>
+
+<form action="/video_procesamiento/" method="POST" enctype="multipart/form-data"> {% csrf_token %}
+    <!-- Campo de entrada para la imagen o video -->
+    <div style="text-align: center;">
+        <video id="videoElement" autoplay="true"></video>
+    </div>
+    <input type="file" name="recognocer" accept="image/*, video/*" hidden>
+    <br>
+    <input type="submit" value="Subir" hidden>
+</form>
+<img id="imagenCapturada" style="display:none;">
+
+<div>
+    <canvas id="canvasElement" height="720" width="1280" style="display:none;"></canvas>
+</div>
+
+<script>
+    const video = document.getElementById("videoElement")
+
+    navigator.mediaDevices.getUserMedia({video: true})
+    .then(
+        (stream) => {
+            video.srcObject = stream
+            console.log(stream)
+        }
+    ).catch((error) => {
+        console.log(error)
+    })
+
+    document.getElementById("takeSnapshot").addEventListener("click", () => {
+        takePicture()
+    })
+    
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+            return parts.pop().split(';').shift();
+        }
+    }
+
+
+    function takePicture () {
+        try {
+            const imagenCapturada = document.getElementById('imagenCapturada')
+            // Capturar la imagen de la cámara
+            const canvas = document.getElementById("canvasElement")
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imagenDataUrl = canvas.toDataURL('image/jpeg');
+            imagenCapturada.src = imagenDataUrl;
+            const csrftoken = getCookie('csrftoken');
+            const imagenBlob = dataURLtoBlob(imagenDataUrl);
+            const imagenFile = new File([imagenBlob], 'captured_image.jpg', { type: 'image/jpeg' });
+            const formData = new FormData();
+            formData.append('recognocer', imagenFile);
+
+            // Enviar la imagen al servidor
+            fetch('/video_procesamiento/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+            });
+
+            event.preventDefault();
+
+
+            // Detener el flujo de la cámara
+            /*
+            stream.getTracks().forEach(track => track.stop());
+            }*/
+        } catch (error) {
+            console.error('Error al acceder a la cámara:', error);
+            }    
+    }
+
+    // Función para convertir data URL en Blob
+    function dataURLtoBlob(dataURL) {
+        const arr = dataURL.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+    }
+
+</script>
+
+{% endblock %}

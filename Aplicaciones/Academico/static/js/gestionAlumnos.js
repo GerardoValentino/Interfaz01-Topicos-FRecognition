@@ -1,4 +1,11 @@
 (function() {
+    Swal.fire({
+        titleText: "Hola",
+        text: "Mensaje de prueba",
+        icon: "success",
+        confirmButton: "Ok!"
+    })
+
     const btnEliminacion = document.querySelectorAll(".btnEliminacion")
 
     btnEliminacion.forEach(btn => {

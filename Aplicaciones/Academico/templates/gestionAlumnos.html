@@ -19,7 +19,7 @@
             <div class="card-body" style="display: flex;
                                         justify-content: flex-start;
                                         flex-direction: column-reverse;">
-                <form enctype="multipart/form-data" action="/registrarAlumno/" method="POST"> {% csrf_token %}
+                <form id="formularioCurso" enctype="multipart/form-data" action="/registrarAlumno/" method="POST"> {% csrf_token %}
                     <div class="form-group" style="margin: 10px;">
                         <input type="text" 
                                 name="txtNUA" 
@@ -84,5 +84,37 @@
 <div>
     <a href="recognize/" class="btn btn-info">Abrir Cámara</a>
 </div>
+<!--Sweet Alert-->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+    const noificationSwal = (titleText, text, icon, confirmButtonText) => {
+        Swal.fire({
+            titleText: titleText,
+            text: text,
+            icon: icon, // warning, error, success, info
+            confirmButton: confirmButtonText
+        });
+    }
+    noificationSwal(document.title, "Alumnos listados con éxito", "success", "Ok")
+
+    formularioCurso.addEventListener("submit", function (e) {
+        let nombre = String(txtNombre.value).trim()
+
+        if (nombre.length < 3) {
+            
+            e.preventDefault()
+        } else {
+            let nua = parseInt(nua.value)
+            if (nua.length < 6 || nua.length > 6) {
+
+                e.preventDefault()
+            }
+        }
+    })
+
+
+</script>
 
 {% endblock %}

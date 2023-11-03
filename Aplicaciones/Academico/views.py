@@ -4,13 +4,14 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+
+from .face_recog import extrae_rostros, recognize_person
 # from django.contrib import messages
 
 # Create your views here.
 
 def home(request):
     alumnosListados = Curso.objects.all()
-    #messages.success(request, '¡Alumnos Listados!')
     return render(request, "gestionAlumnos.html", {"alumnos": alumnosListados})
 
 def registrarAlumno(request):
@@ -22,7 +23,10 @@ def registrarAlumno(request):
             foto = request.FILES['fotoAlumno']
 
             alumno = Curso.objects.create(nua=nua, nombre=nombre, foto=foto)
-            #alumno.save()
+            alumno.foto.delete(save=True)
+            newName = nombre.replace(' ', '_') + '.jpg'
+            alumno.foto.save(newName, foto)
+            extrae_rostros(newName)
             return redirect('/')
         except MultiValueDictKeyError as e:
             print(f'Error: {e}')
@@ -57,11 +61,12 @@ def video_procesamiento(request):
         try:
             print(request.FILES)
             foto = request.FILES['recognocer']
-            with open('media/alumnos/prueba.jpg', 'wb') as archivo:
+            with open('media/input/person.jpg', 'wb') as archivo:
                 for chunk in foto.chunks():
                     archivo.write(chunk)
 
-            return HttpResponse("Todo bien")
+            
+            return HttpResponse(recognize_person('person.jpg').replace('_', ' '))
 
         except MultiValueDictKeyError as e:
             print(f'Error: {e}')

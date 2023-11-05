@@ -22,8 +22,13 @@
     <canvas id="canvasElement" height="720" width="1280" style="display:none;"></canvas>
 </div>
 
+<div id="nombre">
+    
+</div>
+
 <script>
     const video = document.getElementById("videoElement")
+    const persona = document.getElementById("nombre")
 
     navigator.mediaDevices.getUserMedia({video: true})
     .then(
@@ -65,7 +70,7 @@
             formData.append('recognocer', imagenFile);
 
             // Enviar la imagen al servidor
-            fetch('/video_procesamiento/', {
+            nombre = fetch('/video_procesamiento/', {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -73,6 +78,7 @@
                 },
             });
 
+            persona.innerHTML = nombre;
             event.preventDefault();
 
 

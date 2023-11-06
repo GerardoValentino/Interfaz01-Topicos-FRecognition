@@ -156,3 +156,49 @@ def verReporte(request):
         asistencias.append(asistenciaAlumno)
 
     return render(request, "reporte.html", {'dias': dias, 'asistencias': asistencias})
+
+def ObtenerReporte(request):
+    alumnos = Alumno.objects.all()
+    dias = Dia.objects.filter(fecha__in=diasSemanaActual())
+    asistencias = []
+    celdasSemana = ['C2', 'D2', 'E2', 'F2', 'G2', 'H2', 'I2']
+    diasSemana = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
+    
+
+    wb = Workbook()
+    ws = wb.active
+    ws['B1'] = 'REPORTE DE ASISTENCIA'
+    ws.merge_cells('B1:E1')
+    for a, c in zip(celdasSemana, diasSemana):
+        ws[a] = c
+
+    ws['B3'] = 'Nombre del Alumno'
+    celdas = ['C3', 'D3', 'E3', 'F3', 'G3', 'H3', 'I3']
+    for a, c in zip(dias, celdas):
+        ws[c] = a.fecha
+
+    cont = 4 
+
+    for i in alumnos:
+        asistenciaAlumno = []  # Define la lista aquí
+        asistencia = Asistencia.objects.filter(alumno=i, dia__in=dias)
+        asistenciaAlumno.append(i.nombre)
+
+        for a in asistencia:
+            asistenciaAlumno.append(a.asistencia)
+
+        asistencias.append(asistenciaAlumno)
+        
+    for a in asistencias:
+        for c, b in zip(range(2, 10), a):
+            ws.cell(row = cont, column = c).value = b
+
+        cont += 1
+
+    # Crea una respuesta HTTP con el contenido del archivo
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="ReporteAsistencia.xlsx"'
+    #response.write(contenido)
+    wb.save(response)
+
+    return response

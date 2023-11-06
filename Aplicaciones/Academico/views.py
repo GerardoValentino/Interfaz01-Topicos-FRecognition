@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .registro import *
 import datetime
+from openpyxl import Workbook
+from django.http.response import HttpResponse
 
 from .face_recog import extrae_rostros, recognize_person
 # from django.contrib import messages
@@ -58,8 +60,34 @@ def editarAlumno(request):
 def recognize_view(request):
     return render(request, 'recognize.html')
 
+def diasSemanaActual():
+    # Obtiene la fecha actual
+    fecha_actual = datetime.date.today()
+
+    # Obtiene el número del día de la semana (0=domingo, 1=lunes, ..., 6=sábado)
+    numero_dia_semana = fecha_actual.weekday()
+
+    # Calcula la fecha del primer día de la semana (lunes)
+    primer_dia_semana = fecha_actual - datetime.timedelta(days=numero_dia_semana)
+
+    # Calcula las fechas de los días de la semana actual
+    fechas_semana_actual = [primer_dia_semana + datetime.timedelta(days=i) for i in range(7)]
+
+    return fechas_semana_actual
+
+
+def crearAsistenciaSemana(alumno : Alumno):
+    # Muestra las fechas de la semana actual
+    for fecha in diasSemanaActual():
+        dia = ObtenerDiaPorFecha(fecha)
+        if not dia:
+            RegistrarDia(fecha)
+            dia = ObtenerDiaPorFecha(fecha)
+        RegistrarAsistencia(alumno, dia)
+
 def video_procesamiento(request):
     if request.method == 'POST':
+        response = ''
         try:
             print(request.FILES)
             foto = request.FILES['recognocer']
@@ -71,26 +99,60 @@ def video_procesamiento(request):
             alumno = ObtenerAlumnoPorNombre(persona)
 
             if not alumno:
-                return HttpResponse(persona)
+                return HttpResponse('Persona no reconocida')
 
-            fecha_actual = datetime.datetime.now()
-            fecha_formateada = fecha_actual.strftime("%d-%m-%Y")
-            dia = ObtenerDiaPorFecha(fecha_formateada)
+            fecha_actual = datetime.date.today()
+            #fecha_formateada = fecha_actual.strftime("%d-%m-%Y")
+            dia = ObtenerDiaPorFecha(fecha_actual)
 
             if not dia:
-                RegistrarDia(dia)
-                dia = ObtenerDiaPorFecha(fecha_formateada)
+                RegistrarDia(fecha_actual)
+                dia = ObtenerDiaPorFecha(fecha_actual)
                 print(f'El dia se ha registrado ==> {dia}')
                 
             asistencia = ObtenerAsistencia(alumno, dia)
 
             if not asistencia:
-                RegistrarAsistencia(alumno, dia)
-                print(f'Creando asistencia para {alumno}')
-            return HttpResponse(persona)
+                crearAsistenciaSemana(alumno)
+                print(f'Creando la asistencia de la semana para {alumno}')
+                asistencia = ObtenerAsistencia(alumno, dia)
+
+            if asistencia.asistencia == '0':
+                asistencia.asistencia = '1'
+                asistencia.save()
+                response = f'Se registro la asistencia para el alumno {alumno.nombre}'
+            else:
+                response = f'El alumno {alumno.nombre} ya tiene registrada una asistencia'
+            return HttpResponse(response)
+            
 
         except MultiValueDictKeyError as e:
             print(f'Error: {e}')
             return HttpResponse("Error: Error al manejar el formulario")
     else:
         return HttpResponse("El request no es de tipo POST")
+
+def verReporte(request):
+    dias = Dia.objects.filter(fecha__in=diasSemanaActual()) 
+    registros = Alumno.objects.all()
+    asistencias = []
+    print(f'DIAS ===> {dias}')
+    print(f'REGISTROS ===> {registros}')
+    for i in registros:
+        asistencia = Asistencia.objects.filter(alumno=i, dia__in=dias)
+        if not asistencia:
+            crearAsistenciaSemana(i)
+            asistencia = Asistencia.objects.filter(alumno=i, dia__in=dias)
+        print('******************************************')
+        print(f'Alumno {i.nombre}')
+
+        asistenciaAlumno = []
+        asistenciaAlumno.append(i.nombre)
+
+        for a in asistencia:
+            print(f'{a.dia.fecha}: {a.asistencia}')
+            asistenciaAlumno.append(a.asistencia)
+        
+        asistencias.append(asistenciaAlumno)
+
+    return render(request, "reporte.html", {'dias': dias, 'asistencias': asistencias})

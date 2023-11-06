@@ -12,7 +12,7 @@ class Alumno(models.Model):
         return texto.format(self.nua, self.nombre)
 
 class Dia(models.Model):
-    fecha = models.CharField(primary_key=True,max_length=12)
+    fecha = models.DateField(primary_key=True)
     
 
 class Asistencia(models.Model):

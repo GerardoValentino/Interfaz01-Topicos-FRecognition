@@ -1,109 +1,137 @@
-{% extends "./base.html" %}
-{% block title %} Captura {% endblock %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block body %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconocimiento</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
 
-<div style="text-align: center; margin-bottom: 10px;">
-    <button id="takeSnapshot" style="padding: 10px;">Take Photo</button>
-</div>
-
-<form action="/video_procesamiento/" method="POST" enctype="multipart/form-data"> {% csrf_token %}
-    <!-- Campo de entrada para la imagen o video -->
-    <div style="text-align: center;">
-        <video id="videoElement" autoplay="true"></video>
+<body>
+    <div>
+        <a href="/" class="btn btn-info" style="margin: 30px">Regresar</a>
     </div>
-    <input type="file" name="recognocer" accept="image/*, video/*" hidden>
-    <br>
-    <input type="submit" value="Subir" hidden>
-</form>
-<img id="imagenCapturada" style="display:none;">
+    <div style="text-align: center; margin-bottom: 10px;">
+        <button id="takeSnapshot" style="padding: 10px;">Take Photo</button>
+    </div>
 
-<div>
-    <canvas id="canvasElement" height="720" width="1280" style="display:none;"></canvas>
-</div>
+    <form action="/video_procesamiento/" method="POST" enctype="multipart/form-data"> {% csrf_token %}
+        <!-- Campo de entrada para la imagen o video -->
+        <div style="text-align: center;">
+            <video id="videoElement" autoplay="true"></video>
+        </div>
+        <input type="file" name="recognocer" accept="image/*, video/*" hidden>
+        <br>
+        <input type="submit" value="Subir" hidden>
+    </form>
+    <img id="imagenCapturada" style="display:none;">
 
-<div id="nombre">
-    
-</div>
+    <div>
+        <canvas id="canvasElement" height="720" width="1280" style="display:none;"></canvas>
+    </div>
 
-<script>
-    const video = document.getElementById("videoElement")
-    const persona = document.getElementById("nombre")
+    <div id="nombre">
 
-    navigator.mediaDevices.getUserMedia({video: true})
-    .then(
-        (stream) => {
-            video.srcObject = stream
-            console.log(stream)
+    </div>
+
+    <!--Boostrap-->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+        integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
+        integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
+        crossorigin="anonymous"></script>
+
+    <script>
+        const video = document.getElementById("videoElement")
+        const persona = document.getElementById("nombre")
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(
+                (stream) => {
+                    video.srcObject = stream
+                    console.log(stream)
+                }
+            ).catch((error) => {
+                console.log(error)
+            })
+
+        document.getElementById("takeSnapshot").addEventListener("click", () => {
+            takePicture()
+        })
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return parts.pop().split(';').shift();
+            }
         }
-    ).catch((error) => {
-        console.log(error)
-    })
 
-    document.getElementById("takeSnapshot").addEventListener("click", () => {
-        takePicture()
-    })
-    
-    function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) {
-            return parts.pop().split(';').shift();
+
+        function takePicture() {
+            try {
+                const imagenCapturada = document.getElementById('imagenCapturada')
+                // Capturar la imagen de la cámara
+                const canvas = document.getElementById("canvasElement")
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imagenDataUrl = canvas.toDataURL('image/jpeg');
+                imagenCapturada.src = imagenDataUrl;
+                const csrftoken = getCookie('csrftoken');
+                const imagenBlob = dataURLtoBlob(imagenDataUrl);
+                const imagenFile = new File([imagenBlob], 'captured_image.jpg', { type: 'image/jpeg' });
+                const formData = new FormData();
+                formData.append('recognocer', imagenFile);
+
+                // Enviar la imagen al servidor
+                nombre = fetch('/video_procesamiento/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                    },
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al realizar la solicitud');
+                    }
+                    return response.text(); // Puedes usar .text() para obtener la respuesta como texto
+                })
+                    .then(data => {
+                        // `data` contiene la respuesta en formato JSON (o texto)
+                        //console.log(data);
+                        persona.innerHTML = data;
+                    })
+                event.preventDefault();
+
+
+                // Detener el flujo de la cámara
+                /*
+                stream.getTracks().forEach(track => track.stop());
+                }*/
+            } catch (error) {
+                console.error('Error al acceder a la cámara:', error);
+            }
         }
-    }
 
-
-    function takePicture () {
-        try {
-            const imagenCapturada = document.getElementById('imagenCapturada')
-            // Capturar la imagen de la cámara
-            const canvas = document.getElementById("canvasElement")
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imagenDataUrl = canvas.toDataURL('image/jpeg');
-            imagenCapturada.src = imagenDataUrl;
-            const csrftoken = getCookie('csrftoken');
-            const imagenBlob = dataURLtoBlob(imagenDataUrl);
-            const imagenFile = new File([imagenBlob], 'captured_image.jpg', { type: 'image/jpeg' });
-            const formData = new FormData();
-            formData.append('recognocer', imagenFile);
-
-            // Enviar la imagen al servidor
-            nombre = fetch('/video_procesamiento/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                },
-            });
-
-            persona.innerHTML = nombre;
-            event.preventDefault();
-
-
-            // Detener el flujo de la cámara
-            /*
-            stream.getTracks().forEach(track => track.stop());
-            }*/
-        } catch (error) {
-            console.error('Error al acceder a la cámara:', error);
-            }    
-    }
-
-    // Función para convertir data URL en Blob
-    function dataURLtoBlob(dataURL) {
-        const arr = dataURL.split(',');
-        const mime = arr[0].match(/:(.*?);/)[1];
-        const bstr = atob(arr[1]);
-        let n = bstr.length;
-        const u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
+        // Función para convertir data URL en Blob
+        function dataURLtoBlob(dataURL) {
+            const arr = dataURL.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], { type: mime });
         }
-        return new Blob([u8arr], { type: mime });
-    }
 
-</script>
+    </script>
 
-{% endblock %}
+</body>
+
+</html>

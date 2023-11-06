@@ -8,5 +8,6 @@ urlpatterns = [
     path('edicionAlumno/<nua>', views.edicionAlumno),
     path('recognize/', views.recognize_view),
     path('video_procesamiento/', views.video_procesamiento),
-    path('editarAlumno/', views.editarAlumno)
+    path('editarAlumno/', views.editarAlumno),
+    path('reporte/', views.verReporte)
 ]

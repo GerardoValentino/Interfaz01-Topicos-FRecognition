@@ -10,43 +10,50 @@
 </head>
 
 <body>
-  <div>
-    <a href="/" class="btn btn-info" style="margin: 30px">Regresar</a>
-  </div>
-  <div>
-    <a href="obtenerReporte/" class="btn btn-info" style="margin: 30px">Obtener Reporte</a>
-  </div>
-  <div class="col-sm-12 col-md-6 col-lg-8 col-xl-8">
-    <h1 class="text-center">Listado de alumnos</h1>
-    <div class="table-responsive py-2">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>
-              Nombre del Alumno
-            </th>
-            {% for a in dias %}
-            <th>
-              {{ a.fecha }}
-            </th>
+  <nav style="display: flex; justify-content: space-around; padding-top: 10px;">
+    <div>
+      <a href="/" class="btn btn-info" style="margin: 30px">Regresar</a>
+    </div>
+    <img src="../static/images/logo.png" alt="" style="width: 150px; height: 110px;">
+    <div>
+      <a href="obtenerReporte/" class="btn btn-info" style="margin: 30px">Obtener Reporte</a>
+    </div>
+  </nav>
+  
+  <div class="text-center" style="display: flex; justify-content: center; margin-top: 30px;">
+    <div class="col-sm-12 col-md-6 col-lg-8 col-xl-8">
+      <h1 class="text-center">Lista de Asistencia</h1>
+      <div class="table-responsive py-2">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>
+                Nombre del Alumno
+              </th>
+              {% for a in dias %}
+              <th>
+                {{ a.fecha }}
+              </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            
+            {% for a in asistencias %}
+            <tr>
+              {% for b in a %}
+              <td>
+                {{b}}
+              </td>
+              {% endfor %}
+            </tr>
             {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          
-          {% for a in asistencias %}
-          <tr>
-            {% for b in a %}
-            <td>
-              {{b}}
-            </td>
-            {% endfor %}
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
+  
 
   <!--Boostrap-->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"

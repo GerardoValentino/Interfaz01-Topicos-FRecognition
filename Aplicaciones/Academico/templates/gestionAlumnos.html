@@ -46,7 +46,7 @@
                         <input type="file" id="foto" name="fotoAlumno" accept="image/*">
                     </div>
                     <div class="form-group" style="display: flex; padding-left: 10px;">
-                        <button type="submit" class="btn btn-success btn-block text-white">Guardar</button>
+                        <button type="submit" class="btn btn-success btn-block text-white btnGuardar">Guardar</button>
                     </div>
                 </form>
             </div>
@@ -81,7 +81,7 @@
         </div>
     </div>
 </div>
-
+<script src="https://kit.fontawesome.com/817e16562f.js" crossorigin="anonymous"></script>
 <!--Sweet Alert-->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -95,22 +95,67 @@
             confirmButton: confirmButtonText
         });
     }
-    noificationSwal(document.title, "Alumnos listados con éxito", "success", "Ok")
+    //noificationSwal(document.title, "Alumnos listados con éxito", "success", "Ok")
 
     formularioAlumno.addEventListener("submit", function (e) {
         let nombre = String(txtNombre.value).trim()
 
         if (nombre.length < 3) {
-            
+            noificationSwal(document.title, "El nombre del alumno no puede ir vacio...", "warning", "Ok")
             e.preventDefault()
         } else {
             let nua = parseInt(nua.value)
             if (nua.length < 6 || nua.length > 6) {
-
+                noificationSwal(document.title, "El NUA debe contener 6 números...", "warning", "Ok")
                 e.preventDefault()
             }
         }
     })
+
+    const btnEliminacion = document.querySelectorAll(".btnEliminacion")
+    const formGuardar = document.querySelector("#formularioAlumno");
+    const btnGuardar = document.querySelector(".btnGuardar")
+
+    btnEliminacion.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault()
+            Swal.fire({
+                title: "¿Estas seguro(a) que deseas eliminar a esta persona?",              
+                text: "No podrás revertir esta acción!",
+                icon: "warning",
+                showCancelButton: true, 
+                confirmButtonText: "Sí, Eliminar",
+                confirmButtonColor: "#d33",
+                backdrop: true,
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    //console.log("Confirmado!!!!")
+                    location.href = e.target.href;
+                },
+                allowOutsideClick: () => false,
+                allowEscapeKey: () => false
+            })
+        })
+    })
+
+    formGuardar.addEventListener('submit', (e) => {
+        e.preventDefault(); // Evita el envío normal del formulario
+
+        Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "El alumno ha sido guardado!!",
+            showConfirmButton: false,
+            timer: 1500
+        }).then((result) => {
+            // Realiza la acción del formulario después de mostrar la alerta de éxito
+            if (result.dismiss === Swal.DismissReason.timer) {
+                // La alerta se cerró automáticamente (pasaron 1500 ms)
+                // Aquí puedes ejecutar la acción del formulario
+                formGuardar.submit(); // Envía el formulario
+            }
+        });
+    });
 
 
 </script>

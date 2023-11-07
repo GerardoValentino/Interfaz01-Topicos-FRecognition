@@ -7,20 +7,28 @@
     <title>Reconocimiento</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="icon" href="../static/images/logo.ico">
 </head>
 
 <body>
-    <div>
-        <a href="/" class="btn btn-info" style="margin: 30px">Regresar</a>
-    </div>
-    <div style="text-align: center; margin-bottom: 10px;">
-        <button id="takeSnapshot" style="padding: 10px;">Take Photo</button>
-    </div>
+    <nav style="display: flex; justify-content: space-around; padding-top: 10px; align-items: center;">
+        <div>
+            <a href="/" class="btn btn-info" style="margin: 30px">Regresar</a>
+        </div>
+        <h1>Capturar Asistencia</h1>
+        <img src="../static/images/logo.png" alt="" style="width: 150px; height: 110px;">
+    </nav>
 
     <form action="/video_procesamiento/" method="POST" enctype="multipart/form-data"> {% csrf_token %}
         <!-- Campo de entrada para la imagen o video -->
-        <div style="text-align: center;">
-            <video id="videoElement" autoplay="true"></video>
+        <div style="text-align: center; text-align: center; display: flex; flex-wrap: nowrap;
+            flex-direction: column;
+            align-items: center;">
+            <video id="videoElement" autoplay="true" style="border-radius: 20px; margin: 15px;"></video>
+            <div class="outer circle">
+                <button id="takeSnapshot" style="padding: 10px;"><i class="fa-solid fa-camera" style="color: #ffffff; font-size: 40px;"></i></button>
+            </div>
         </div>
         <input type="file" name="recognocer" accept="image/*, video/*" hidden>
         <br>
@@ -36,6 +44,7 @@
 
     </div>
 
+    <script src="https://kit.fontawesome.com/817e16562f.js" crossorigin="anonymous"></script>
     <!--Boostrap-->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
         integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
@@ -43,6 +52,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
         integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
         crossorigin="anonymous"></script>
+    <!--Sweet Alert-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
     <script>
         const video = document.getElementById("videoElement")
@@ -102,8 +114,16 @@
                 })
                     .then(data => {
                         // `data` contiene la respuesta en formato JSON (o texto)
-                        //console.log(data);
-                        persona.innerHTML = data;
+                        console.log(data);
+                        Swal.fire({
+                            position: "center",
+                            icon: "warning",
+                            title: "¡Aviso!",
+                            text: data,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        //persona.innerHTML = data;
                     })
                 event.preventDefault();
 
